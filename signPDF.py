@@ -11,13 +11,6 @@ There is a tool xcf2pnm http://manpages.ubuntu.com/manpages/trusty/man1/xcf2pnm.
 but not a tool pnm2xcf.
 
 pinta will not open ppm files.
-
-By default, ImageMagick convert will throw an error:
-convert: not authorized `/tmp/pdftoppm_temp.pdf' @ error/constitute.c/WriteImage/1028.
-To fix this, sudo nano /etc/ImageMagick-6/policy.xml and change
-<policy domain="coder" rights="none" pattern="PDF" />
-to
-<policy domain="coder" rights="write" pattern="PDF" />
 """
 
 import argparse
@@ -97,11 +90,20 @@ if get_pdftoppm_version() < (0,14,2):
   tempimgfilename = tempimgfileprefix + '-' + str(args.page) + '.' + tempimgformat
 else:
   tempimgfilename = tempimgfileprefix + '.' + tempimgformat
-subprocess.call(pdftoppmCall,
+subprocess.check_call(pdftoppmCall,
                 stdout=sys.stdout, stderr=sys.stderr)
-subprocess.call([args.editor, tempimgfilename], stdout=sys.stdout, stderr=sys.stderr)
-subprocess.call(['convert', tempimgfilename, singlepagePDFfilename], stdout=sys.stdout, stderr=sys.stderr)
+subprocess.check_call([args.editor, tempimgfilename], stdout=sys.stdout, stderr=sys.stderr)
+try:
+  subprocess.check_call(['convert', tempimgfilename, singlepagePDFfilename], stdout=sys.stdout, stderr=sys.stderr)
+except subprocess.CalledProcessError:
+  raise Exception('''By default, ImageMagick convert will throw an error:
+convert: not authorized `/tmp/pdftoppm_temp.pdf' @ error/constitute.c/WriteImage/1028.
+To fix this, sudo nano /etc/ImageMagick-6/policy.xml and change
+<policy domain="coder" rights="none" pattern="PDF" />
+to
+<policy domain="coder" rights="write" pattern="PDF" />''')
 # Somehow, the round-trip is making the image larger (in dimension, not just file size), so the final PDF has one page larger than the others. This isn't a question of moving to a larger set size; if you re-run on the same page, it will get even bigger.
+assert os.path.exists(singlepagePDFfilename)
 signedPage = PyPDF2.PdfFileReader(singlepagePDFfilename)
 assert signedPage.getNumPages() == 1
 originalPDF = PyPDF2.PdfFileReader(args.PDFfilename)
