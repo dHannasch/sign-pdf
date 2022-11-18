@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Right now it uses gimp for the actual drawing part,
 which is annoying because gimp refuses to save a .ppm file back as the same .ppm file;
