@@ -35,6 +35,7 @@ parser.add_argument('--page', '-n',
                     type=int, default=1,
                     help='page of the PDF file')
 parser.add_argument('--delete',
+                    action='append',
                     type=int, default=None,
                     help='page to delete')
 parser.add_argument('--editor', '-e',
@@ -110,7 +111,7 @@ originalPDF = PyPDF2.PdfFileReader(args.PDFfilename)
 output = PyPDF2.PdfFileWriter()
 for index,page in enumerate(originalPDF.pages):
     if index != args.page - 1:
-        if args.delete is None or index != args.delete - 1:
+        if args.delete is None or index + 1 not in args.delete:
             output.addPage(page)
     else:
         assert index + 1 == args.page
