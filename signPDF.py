@@ -120,6 +120,8 @@ for index,page in enumerate(originalPDF.pages):
         newSize = newPage.mediaBox
         if originalSize != newSize:
             print('size changed from', originalSize, 'to', newSize, 'fixing...')
+            assert originalSize[0] == 0
+            assert originalSize[1] == 0
             newPage.scaleTo(float(originalSize[2]), float(originalSize[3]))
         page.mergePage(newPage)
         # PIL also does this https://stackoverflow.com/questions/5324647/how-to-merge-a-transparent-png-image-with-another-image-using-pil
